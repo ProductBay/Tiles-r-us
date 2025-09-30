@@ -283,11 +283,13 @@ function WallPlane({
 }
 
 /* Draggable overlay panel */
+/* Draggable overlay panel (collapsible + draggable) */
 function DraggablePanel({ containerRef, title = "Showroom Controls", children }) {
   const panelRef = useRef(null);
   const [pos, setPos] = useState({ x: 16, y: 16 });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [collapsed, setCollapsed] = useState(false); // NEW state
 
   const onPointerDown = (e) => {
     e.preventDefault();
@@ -336,17 +338,34 @@ function DraggablePanel({ containerRef, title = "Showroom Controls", children })
       className="absolute z-10"
       style={{ left: pos.x, top: pos.y }}
     >
-      <div className="bg-white/90 backdrop-blur-sm text-black rounded-md shadow-lg w-72 max-h-[70vh] overflow-auto">
+      <div className="bg-white/90 backdrop-blur-sm text-black rounded-md shadow-lg w-72 max-h-[70vh] overflow-hidden">
+        {/* Header */}
         <div
           className={`cursor-${dragging ? "grabbing" : "grab"} flex items-center justify-between px-3 py-2 border-b bg-white/60 sticky top-0`}
           onPointerDown={onPointerDown}
         >
           <span className="text-sm font-semibold">{title}</span>
-          <span className="text-xs text-gray-600">drag me</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setCollapsed((c) => !c);
+              }}
+              className="text-xs text-gray-800 hover:text-black px-2 py-0.5 rounded hover:bg-gray-200"
+              title={collapsed ? "Expand panel" : "Collapse panel"}
+            >
+              {collapsed ? "▸" : "▾"}
+            </button>
+            <span className="text-xs text-gray-600">drag me</span>
+          </div>
         </div>
-        <div className="p-3">
-          {children}
-        </div>
+
+        {/* Panel Content (hidden if collapsed) */}
+        {!collapsed && (
+          <div className="p-3 overflow-auto max-h-[60vh]">
+            {children}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1194,7 +1213,10 @@ export default function App() {
       </div>
 
       {/* 3D Canvas with draggable overlay controls */}
-      <div ref={canvasContainerRef} className="w-full max-w-4xl h-[60vh] mb-6 bg-white rounded-xl shadow-lg overflow-hidden relative">
+<div
+  ref={canvasContainerRef}
+  className="w-full max-w-6xl h-[75vh] mb-6 bg-white rounded-xl shadow-lg overflow-hidden relative"
+>
         {/* Draggable overlay containing showroom controls */}
         <DraggablePanel containerRef={canvasContainerRef} title="Showroom Controls">
           {/* Tile choices */}
@@ -2016,12 +2038,32 @@ export default function App() {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
+				  
                 </div>
               </li>
             ))}
           </ul>
         )}
+		
       </div>
+	        {/* Footer */}
+      <footer className="w-full max-w-4xl text-center text-xs text-gray-200 mt-8 border-t border-white/20 pt-4">
+        <p className="mb-1">
+          Developed by <strong>Ashandie Powell</strong>
+        </p>
+        <p className="mb-1">
+          📞 876-594-7320 &nbsp; | &nbsp; 📧{" "}
+          <a href="mailto:ashandiepowell86@gmail.com" className="underline hover:text-white">
+            ashandiepowell86@gmail.com
+          </a>
+        </p>
+        <p className="italic mb-1">
+          This demo showroom is a property of <strong>Product Bay Group</strong>
+        </p>
+        <p className="opacity-80">
+          By using this demo, you agree to the <a href="#" className="underline">Terms of Use</a>.
+        </p>
+      </footer>
     </div>
   );
 }
