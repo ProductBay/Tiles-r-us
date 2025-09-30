@@ -1,1 +1,21 @@
-
+{
+  "short_name": "Tile-it-3D",
+  "name": "Tile-it-3D Showroom",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#4c1d95",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary"
+}
