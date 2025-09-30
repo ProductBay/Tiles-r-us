@@ -1156,36 +1156,57 @@ export default function App() {
 
   // Auth screen
   if (!loggedInUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-purple-900 text-white">
-        <form
-          onSubmit={isRegistering ? handleRegister : handleLogin}
-          className="bg-white text-black p-6 rounded-xl shadow-md w-80"
-        >
-          <h2 className="text-xl font-bold mb-4 text-center">
-            {isRegistering ? "Register Sales Rep" : "Sales Rep Login"}
-          </h2>
-          {isRegistering && (
-            <>
-              <input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-2 border rounded mb-3" />
-              <input placeholder="Employee ID" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className="w-full p-2 border rounded mb-3" />
-            </>
-          )}
-          <input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full p-2 border rounded mb-3" />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2 border rounded mb-3" />
-          {!isRegistering && (
-            <label className="flex items-center mb-3">
-              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="mr-2" /> Remember Me
-            </label>
-          )}
-          <button type="submit" className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">{isRegistering ? "Register" : "Login"}</button>
-          <p onClick={() => setIsRegistering(!isRegistering)} className="text-sm text-center mt-4 cursor-pointer text-blue-600">
-            {isRegistering ? "Already have an account? Login" : "New here? Register"}
-          </p>
-        </form>
-      </div>
-    );
-  }
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-purple-900 text-white p-4">
+      <form
+        onSubmit={isRegistering ? handleRegister : handleLogin}
+        className="bg-white text-black p-6 rounded-xl shadow-md w-80 mb-6"
+      >
+        <h2 className="text-xl font-bold mb-4 text-center">
+          {isRegistering ? "Register Sales Rep" : "Sales Rep Login"}
+        </h2>
+        {isRegistering && (
+          <>
+            <input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-2 border rounded mb-3" />
+            <input placeholder="Employee ID" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className="w-full p-2 border rounded mb-3" />
+          </>
+        )}
+        <input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full p-2 border rounded mb-3" />
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2 border rounded mb-3" />
+        {!isRegistering && (
+          <label className="flex items-center mb-3">
+            <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="mr-2" /> Remember Me
+          </label>
+        )}
+        <button type="submit" className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">{isRegistering ? "Register" : "Login"}</button>
+        <p onClick={() => setIsRegistering(!isRegistering)} className="text-sm text-center mt-4 cursor-pointer text-blue-600">
+          {isRegistering ? "Already have an account? Login" : "New here? Register"}
+        </p>
+      </form>
+
+      {/* Terms of Use Accordion (open by default) */}
+      <details open className="bg-white/95 text-black rounded p-4 w-80 text-xs leading-relaxed shadow">
+        <summary className="cursor-pointer font-semibold mb-2">
+          Terms of Use
+        </summary>
+        <p>
+          Welcome to the Tiles 3D Showroom demo. By using this demo application, you agree to the following terms:
+        </p>
+        <ul className="list-disc pl-5 mt-2 space-y-1">
+          <li>This is a demonstration tool only; calculations, previews, and 3D visualizations are illustrative and approximate.</li>
+          <li>All demo content (textures, models, user interface) is the property of <strong>Product Bay Group</strong>.</li>
+          <li><strong>All source code, software logic, and related intellectual property of this tool are solely owned by Ashandie Powell.</strong></li>
+          <li>Unauthorized reproduction, redistribution, resale, or modification of the code, in whole or in part, is strictly prohibited without prior written consent.</li>
+          <li>Any information entered is treated as demo data only and is not private or secure.</li>
+        </ul>
+        <p className="mt-3 text-xs italic">
+          © {new Date().getFullYear()} Product Bay Group. All rights reserved.<br/>
+          Source Code Copyright © {new Date().getFullYear()} <strong>Ashandie Powell</strong>.
+        </p>
+      </details>
+    </div>
+  );
+}
 
   // Main UI
   return (
@@ -2048,7 +2069,7 @@ export default function App() {
   <summary className="cursor-pointer underline hover:text-white">Terms of Use</summary>
   <div className="bg-white/90 text-black rounded p-4 mt-2 text-left text-xs leading-relaxed">
     <p>
-      Welcome to the Tiles‑Я‑Us 3D Showroom demo. By using this demo application, you agree to the following terms:
+      Welcome to the Tiles 3D Showroom demo. By using this demo application, you agree to the following terms:
     </p>
     <ul className="list-disc pl-6 mt-2 space-y-1">
       <li>This is a demonstration tool only; all calculations, previews, and 3D visualizations are for illustrative purposes and may not reflect exact product specifications.</li>
