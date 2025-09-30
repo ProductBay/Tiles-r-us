@@ -283,11 +283,13 @@ function WallPlane({
 }
 
 /* Draggable overlay panel */
-function DraggablePanel({ containerRef, title = "Showroom Controls", children }) {
+/* Draggable overlay panel (collapsible + draggable) */
+function DraggablePanel({ containerRef, title = "Showroom Controls", children, defaultCollapsed = false }) {
   const panelRef = useRef(null);
   const [pos, setPos] = useState({ x: 16, y: 16 });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [collapsed, setCollapsed] = useState(defaultCollapsed); // NEW
 
   const onPointerDown = (e) => {
     e.preventDefault();
@@ -307,21 +309,17 @@ function DraggablePanel({ containerRef, title = "Showroom Controls", children })
 
       const cRect = container.getBoundingClientRect();
       const pRect = panel.getBoundingClientRect();
-
       let x = e.clientX - cRect.left - offset.x;
       let y = e.clientY - cRect.top - offset.y;
-
       const padding = 8;
       const maxX = Math.max(padding, cRect.width - pRect.width - padding);
       const maxY = Math.max(padding, cRect.height - pRect.height - padding);
-
       x = Math.min(maxX, Math.max(padding, x));
       y = Math.min(maxY, Math.max(padding, y));
       setPos({ x, y });
     };
 
     const onUp = () => setDragging(false);
-
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
     return () => {
@@ -331,22 +329,29 @@ function DraggablePanel({ containerRef, title = "Showroom Controls", children })
   }, [dragging, offset, containerRef]);
 
   return (
-    <div
-      ref={panelRef}
-      className="absolute z-10"
-      style={{ left: pos.x, top: pos.y }}
-    >
-      <div className="bg-white/90 backdrop-blur-sm text-black rounded-md shadow-lg w-72 max-h-[70vh] overflow-auto">
+    <div ref={panelRef} className="absolute z-10" style={{ left: pos.x, top: pos.y }}>
+      <div className="bg-white/90 backdrop-blur-sm text-black rounded-md shadow-lg w-72 max-h-[70vh] overflow-hidden">
+        {/* Header */}
         <div
-          className={`cursor-${dragging ? "grabbing" : "grab"} flex items-center justify-between px-3 py-2 border-b bg-white/60 sticky top-0`}
+          className={`cursor-${dragging ? "grabbing" : "grab"} flex items-center justify-between px-3 py-2 border-b bg-white/70 sticky top-0`}
           onPointerDown={onPointerDown}
         >
           <span className="text-sm font-semibold">{title}</span>
-          <span className="text-xs text-gray-600">drag me</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setCollapsed((c) => !c);
+              }}
+              className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-black font-bold"
+              title={collapsed ? "Expand panel" : "Collapse panel"}
+            >
+              {collapsed ? "+" : "–"}
+            </button>
+          </div>
         </div>
-        <div className="p-3">
-          {children}
-        </div>
+        {/* Content */}
+        {!collapsed && <div className="p-3 overflow-auto max-h-[60vh]">{children}</div>}
       </div>
     </div>
   );
@@ -1151,36 +1156,57 @@ export default function App() {
 
   // Auth screen
   if (!loggedInUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-purple-900 text-white">
-        <form
-          onSubmit={isRegistering ? handleRegister : handleLogin}
-          className="bg-white text-black p-6 rounded-xl shadow-md w-80"
-        >
-          <h2 className="text-xl font-bold mb-4 text-center">
-            {isRegistering ? "Register Sales Rep" : "Sales Rep Login"}
-          </h2>
-          {isRegistering && (
-            <>
-              <input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-2 border rounded mb-3" />
-              <input placeholder="Employee ID" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className="w-full p-2 border rounded mb-3" />
-            </>
-          )}
-          <input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full p-2 border rounded mb-3" />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2 border rounded mb-3" />
-          {!isRegistering && (
-            <label className="flex items-center mb-3">
-              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="mr-2" /> Remember Me
-            </label>
-          )}
-          <button type="submit" className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">{isRegistering ? "Register" : "Login"}</button>
-          <p onClick={() => setIsRegistering(!isRegistering)} className="text-sm text-center mt-4 cursor-pointer text-blue-600">
-            {isRegistering ? "Already have an account? Login" : "New here? Register"}
-          </p>
-        </form>
-      </div>
-    );
-  }
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-purple-900 text-white p-4">
+      <form
+        onSubmit={isRegistering ? handleRegister : handleLogin}
+        className="bg-white text-black p-6 rounded-xl shadow-md w-80 mb-6"
+      >
+        <h2 className="text-xl font-bold mb-4 text-center">
+          {isRegistering ? "Register Sales Rep" : "Sales Rep Login"}
+        </h2>
+        {isRegistering && (
+          <>
+            <input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-2 border rounded mb-3" />
+            <input placeholder="Employee ID" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className="w-full p-2 border rounded mb-3" />
+          </>
+        )}
+        <input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full p-2 border rounded mb-3" />
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-2 border rounded mb-3" />
+        {!isRegistering && (
+          <label className="flex items-center mb-3">
+            <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="mr-2" /> Remember Me
+          </label>
+        )}
+        <button type="submit" className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">{isRegistering ? "Register" : "Login"}</button>
+        <p onClick={() => setIsRegistering(!isRegistering)} className="text-sm text-center mt-4 cursor-pointer text-blue-600">
+          {isRegistering ? "Already have an account? Login" : "New here? Register"}
+        </p>
+      </form>
+
+      {/* Terms of Use Accordion (open by default) */}
+      <details open className="bg-white/95 text-black rounded p-4 w-80 text-xs leading-relaxed shadow">
+        <summary className="cursor-pointer font-semibold mb-2">
+          Terms of Use
+        </summary>
+        <p>
+          Welcome to the Tiles 3D Showroom demo. By using this demo application, you agree to the following terms:
+        </p>
+        <ul className="list-disc pl-5 mt-2 space-y-1">
+          <li>This is a demonstration tool only; calculations, previews, and 3D visualizations are illustrative and approximate.</li>
+          <li>All demo content (textures, models, user interface) is the property of <strong>Product Bay Group</strong>.</li>
+          <li><strong>All source code, software logic, and related intellectual property of this tool are solely owned by Ashandie Powell.</strong></li>
+          <li>Unauthorized reproduction, redistribution, resale, or modification of the code, in whole or in part, is strictly prohibited without prior written consent.</li>
+          <li>Any information entered is treated as demo data only and is not private or secure.</li>
+        </ul>
+        <p className="mt-3 text-xs italic">
+          © {new Date().getFullYear()} Product Bay Group. All rights reserved.<br/>
+          Source Code Copyright © {new Date().getFullYear()} <strong>Ashandie Powell</strong>.
+        </p>
+      </details>
+    </div>
+  );
+}
 
   // Main UI
   return (
@@ -1194,7 +1220,10 @@ export default function App() {
       </div>
 
       {/* 3D Canvas with draggable overlay controls */}
-      <div ref={canvasContainerRef} className="w-full max-w-4xl h-[60vh] mb-6 bg-white rounded-xl shadow-lg overflow-hidden relative">
+<div
+  ref={canvasContainerRef}
+  className="w-full max-w-6xl h-[75vh] mb-6 bg-white rounded-xl shadow-lg overflow-hidden relative"
+>
         {/* Draggable overlay containing showroom controls */}
         <DraggablePanel containerRef={canvasContainerRef} title="Showroom Controls">
           {/* Tile choices */}
@@ -1309,7 +1338,7 @@ export default function App() {
         </DraggablePanel>
 
         {/* Objects Panel */}
-        <DraggablePanel containerRef={canvasContainerRef} title="Objects">
+        <DraggablePanel containerRef={canvasContainerRef} title="Objects" defaultCollapsed={true}>
           <div className="space-y-3 text-xs">
             {/* Catalog filter */}
             <div>
@@ -2016,12 +2045,49 @@ export default function App() {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
+				  
                 </div>
               </li>
             ))}
           </ul>
         )}
+		
       </div>
+{/* Footer */}
+<footer className="w-full max-w-4xl text-center text-xs text-gray-200 mt-8 border-t border-white/20 pt-4">
+  <p className="mb-1">Developed by <strong>Ashandie Powell</strong></p>
+  <p className="mb-1">
+    📞 876-594-7320 &nbsp; | &nbsp; 📧{" "}
+    <a href="mailto:ashandiepowell86@gmail.com" className="underline hover:text-white">
+      ashandiepowell86@gmail.com
+    </a>
+  </p>
+  <p className="italic mb-1">This demo showroom is a property of <strong>Product Bay Group</strong></p>
+
+  {/* Accordion toggle */}
+ <details className="mt-3">
+  <summary className="cursor-pointer underline hover:text-white">Terms of Use</summary>
+  <div className="bg-white/90 text-black rounded p-4 mt-2 text-left text-xs leading-relaxed">
+    <p>
+      Welcome to the Tiles 3D Showroom demo. By using this demo application, you agree to the following terms:
+    </p>
+    <ul className="list-disc pl-6 mt-2 space-y-1">
+      <li>This is a demonstration tool only; all calculations, previews, and 3D visualizations are for illustrative purposes and may not reflect exact product specifications.</li>
+      <li>All artwork, textures, and content in this demo remain the intellectual property of <strong>Product Bay Group</strong> and are for presentation use only.</li>
+      <li><strong>All source code, software logic, and related intellectual property of this web tool are solely owned by Ashandie Powell.</strong></li>
+      <li>Unauthorized reproduction, redistribution, resale, or modification of the code, in whole or in part, is strictly prohibited without prior written consent from Ashandie Powell.</li>
+      <li>Any customer or business information entered is treated as demonstration input only and is not handled as confidential or secure data.</li>
+    </ul>
+    <p className="mt-3 text-sm font-semibold">
+      © {new Date().getFullYear()} Product Bay Group. All rights reserved.
+    </p>
+    <p className="mt-1 text-sm">
+      Software & Source Code Copyright © {new Date().getFullYear()} <strong>Ashandie Powell</strong>. All rights reserved.
+    </p>
+  </div>
+</details>
+
+</footer>
     </div>
   );
 }
