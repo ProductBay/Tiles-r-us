@@ -284,12 +284,12 @@ function WallPlane({
 
 /* Draggable overlay panel */
 /* Draggable overlay panel (collapsible + draggable) */
-function DraggablePanel({ containerRef, title = "Showroom Controls", children }) {
+function DraggablePanel({ containerRef, title = "Showroom Controls", children, defaultCollapsed = false }) {
   const panelRef = useRef(null);
   const [pos, setPos] = useState({ x: 16, y: 16 });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [collapsed, setCollapsed] = useState(false); // NEW state
+  const [collapsed, setCollapsed] = useState(defaultCollapsed); // NEW
 
   const onPointerDown = (e) => {
     e.preventDefault();
@@ -309,21 +309,17 @@ function DraggablePanel({ containerRef, title = "Showroom Controls", children })
 
       const cRect = container.getBoundingClientRect();
       const pRect = panel.getBoundingClientRect();
-
       let x = e.clientX - cRect.left - offset.x;
       let y = e.clientY - cRect.top - offset.y;
-
       const padding = 8;
       const maxX = Math.max(padding, cRect.width - pRect.width - padding);
       const maxY = Math.max(padding, cRect.height - pRect.height - padding);
-
       x = Math.min(maxX, Math.max(padding, x));
       y = Math.min(maxY, Math.max(padding, y));
       setPos({ x, y });
     };
 
     const onUp = () => setDragging(false);
-
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
     return () => {
@@ -333,15 +329,11 @@ function DraggablePanel({ containerRef, title = "Showroom Controls", children })
   }, [dragging, offset, containerRef]);
 
   return (
-    <div
-      ref={panelRef}
-      className="absolute z-10"
-      style={{ left: pos.x, top: pos.y }}
-    >
+    <div ref={panelRef} className="absolute z-10" style={{ left: pos.x, top: pos.y }}>
       <div className="bg-white/90 backdrop-blur-sm text-black rounded-md shadow-lg w-72 max-h-[70vh] overflow-hidden">
         {/* Header */}
         <div
-          className={`cursor-${dragging ? "grabbing" : "grab"} flex items-center justify-between px-3 py-2 border-b bg-white/60 sticky top-0`}
+          className={`cursor-${dragging ? "grabbing" : "grab"} flex items-center justify-between px-3 py-2 border-b bg-white/70 sticky top-0`}
           onPointerDown={onPointerDown}
         >
           <span className="text-sm font-semibold">{title}</span>
@@ -351,21 +343,15 @@ function DraggablePanel({ containerRef, title = "Showroom Controls", children })
                 e.stopPropagation();
                 setCollapsed((c) => !c);
               }}
-              className="text-xs text-gray-800 hover:text-black px-2 py-0.5 rounded hover:bg-gray-200"
+              className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-black font-bold"
               title={collapsed ? "Expand panel" : "Collapse panel"}
             >
-              {collapsed ? "▸" : "▾"}
+              {collapsed ? "+" : "–"}
             </button>
-            <span className="text-xs text-gray-600">drag me</span>
           </div>
         </div>
-
-        {/* Panel Content (hidden if collapsed) */}
-        {!collapsed && (
-          <div className="p-3 overflow-auto max-h-[60vh]">
-            {children}
-          </div>
-        )}
+        {/* Content */}
+        {!collapsed && <div className="p-3 overflow-auto max-h-[60vh]">{children}</div>}
       </div>
     </div>
   );
@@ -1331,7 +1317,7 @@ export default function App() {
         </DraggablePanel>
 
         {/* Objects Panel */}
-        <DraggablePanel containerRef={canvasContainerRef} title="Objects">
+        <DraggablePanel containerRef={canvasContainerRef} title="Objects" defaultCollapsed={true}>
           <div className="space-y-3 text-xs">
             {/* Catalog filter */}
             <div>
@@ -2046,24 +2032,41 @@ export default function App() {
         )}
 		
       </div>
-	        {/* Footer */}
-      <footer className="w-full max-w-4xl text-center text-xs text-gray-200 mt-8 border-t border-white/20 pt-4">
-        <p className="mb-1">
-          Developed by <strong>Ashandie Powell</strong>
-        </p>
-        <p className="mb-1">
-          📞 876-594-7320 &nbsp; | &nbsp; 📧{" "}
-          <a href="mailto:ashandiepowell86@gmail.com" className="underline hover:text-white">
-            ashandiepowell86@gmail.com
-          </a>
-        </p>
-        <p className="italic mb-1">
-          This demo showroom is a property of <strong>Product Bay Group</strong>
-        </p>
-        <p className="opacity-80">
-          By using this demo, you agree to the <a href="#" className="underline">Terms of Use</a>.
-        </p>
-      </footer>
+{/* Footer */}
+<footer className="w-full max-w-4xl text-center text-xs text-gray-200 mt-8 border-t border-white/20 pt-4">
+  <p className="mb-1">Developed by <strong>Ashandie Powell</strong></p>
+  <p className="mb-1">
+    📞 876-594-7320 &nbsp; | &nbsp; 📧{" "}
+    <a href="mailto:ashandiepowell86@gmail.com" className="underline hover:text-white">
+      ashandiepowell86@gmail.com
+    </a>
+  </p>
+  <p className="italic mb-1">This demo showroom is a property of <strong>Product Bay Group</strong></p>
+
+  {/* Accordion toggle */}
+ <details className="mt-3">
+  <summary className="cursor-pointer underline hover:text-white">Terms of Use</summary>
+  <div className="bg-white/90 text-black rounded p-4 mt-2 text-left text-xs leading-relaxed">
+    <p>
+      Welcome to the Tiles‑Я‑Us 3D Showroom demo. By using this demo application, you agree to the following terms:
+    </p>
+    <ul className="list-disc pl-6 mt-2 space-y-1">
+      <li>This is a demonstration tool only; all calculations, previews, and 3D visualizations are for illustrative purposes and may not reflect exact product specifications.</li>
+      <li>All artwork, textures, and content in this demo remain the intellectual property of <strong>Product Bay Group</strong> and are for presentation use only.</li>
+      <li><strong>All source code, software logic, and related intellectual property of this web tool are solely owned by Ashandie Powell.</strong></li>
+      <li>Unauthorized reproduction, redistribution, resale, or modification of the code, in whole or in part, is strictly prohibited without prior written consent from Ashandie Powell.</li>
+      <li>Any customer or business information entered is treated as demonstration input only and is not handled as confidential or secure data.</li>
+    </ul>
+    <p className="mt-3 text-sm font-semibold">
+      © {new Date().getFullYear()} Product Bay Group. All rights reserved.
+    </p>
+    <p className="mt-1 text-sm">
+      Software & Source Code Copyright © {new Date().getFullYear()} <strong>Ashandie Powell</strong>. All rights reserved.
+    </p>
+  </div>
+</details>
+
+</footer>
     </div>
   );
 }
